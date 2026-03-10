@@ -255,7 +255,7 @@
       }
 
       /* ========================================
-       SCORE ACTIONS — +1, +2, +3 Buttons
+       SCORE ACTIONS — +1/+2/+3 and -1/-2/-3
        ======================================== */
       .score-actions {
         display: grid;
@@ -331,6 +331,17 @@
       .score-actions .btn:hover {
         border-color: rgba(0, 255, 65, 0.4);
         background: linear-gradient(180deg, #0a1a0d 0%, #050d07 100%);
+      }
+
+      /* Score minus buttons — Red accent */
+      .score-actions .btn-minus {
+        color: var(--led-red);
+        border-color: rgba(255, 45, 45, 0.25);
+        text-shadow: 0 0 8px var(--glow-red);
+      }
+      .score-actions .btn-minus:hover {
+        border-color: rgba(255, 45, 45, 0.5);
+        background: linear-gradient(180deg, #1e0707 0%, #100303 100%);
       }
 
       /* ========================================
@@ -695,7 +706,7 @@
         <div
           class="score-actions"
           role="group"
-          aria-label="Nút cộng điểm đội nhà"
+          aria-label="Nút cộng trừ điểm đội nhà"
         >
           <button class="btn" data-team="home" data-points="1" type="button">
             +1
@@ -705,6 +716,30 @@
           </button>
           <button class="btn" data-team="home" data-points="3" type="button">
             +3
+          </button>
+          <button
+            class="btn btn-minus"
+            data-team="home"
+            data-points="-1"
+            type="button"
+          >
+            -1
+          </button>
+          <button
+            class="btn btn-minus"
+            data-team="home"
+            data-points="-2"
+            type="button"
+          >
+            -2
+          </button>
+          <button
+            class="btn btn-minus"
+            data-team="home"
+            data-points="-3"
+            type="button"
+          >
+            -3
           </button>
         </div>
       </section>
@@ -750,7 +785,7 @@
         <div
           class="score-actions"
           role="group"
-          aria-label="Nút cộng điểm đội khách"
+          aria-label="Nút cộng trừ điểm đội khách"
         >
           <button class="btn" data-team="away" data-points="1" type="button">
             +1
@@ -760,6 +795,30 @@
           </button>
           <button class="btn" data-team="away" data-points="3" type="button">
             +3
+          </button>
+          <button
+            class="btn btn-minus"
+            data-team="away"
+            data-points="-1"
+            type="button"
+          >
+            -1
+          </button>
+          <button
+            class="btn btn-minus"
+            data-team="away"
+            data-points="-2"
+            type="button"
+          >
+            -2
+          </button>
+          <button
+            class="btn btn-minus"
+            data-team="away"
+            data-points="-3"
+            type="button"
+          >
+            -3
           </button>
         </div>
       </section>
