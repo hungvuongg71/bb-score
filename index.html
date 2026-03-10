@@ -1,696 +1,1243 @@
 <!doctype html>
 <html lang="vi">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Basketball Scoreboard</title>
-  <style>
-    :root {
-      --bg: #000;
-      --panel: #0a0a0a;
-      --line: #ff7a38;
-      --text: #ffd9c6;
-      --score: #ff9c62;
-      --timer: #ffe25e;
-      --danger: #ff2424;
-    }
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <title>Basketball Scoreboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/dseg@0.46.0/css/dseg.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800;900&display=swap");
 
-    * { box-sizing: border-box; }
+      /* ========================================
+       CSS VARIABLES — LED Scoreboard Theme
+       ======================================== */
+      :root {
+        --bg: #000000;
+        --panel-bg: #0a0a0a;
+        --frame: #1a1d22;
+        --frame-edge: #2e3238;
+        --frame-highlight: #3c4148;
+        --led-green: #00ff41;
+        --led-green-dim: #003d0f;
+        --led-amber: #ffbf00;
+        --led-amber-dim: #3d2d00;
+        --led-red: #ff2d2d;
+        --led-red-dim: #3d0b0b;
+        --led-cyan: #00e5ff;
+        --led-white: #e0e6ed;
+        --led-label: #8a9bb0;
+        --metal-dark: #14171c;
+        --metal-mid: #1e2228;
+        --metal-light: #2a2f36;
+        --screw: #3a3f46;
+        --glow-green: rgba(0, 255, 65, 0.35);
+        --glow-amber: rgba(255, 191, 0, 0.35);
+        --glow-red: rgba(255, 45, 45, 0.3);
+        --glow-cyan: rgba(0, 229, 255, 0.3);
+      }
 
-    html,
-    body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at top, #141414 0%, var(--bg) 55%);
-      color: var(--text);
-      font-family: "Courier New", Courier, monospace;
-    }
+      /* ========================================
+       RESET & BASE
+       ======================================== */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    body {
-      min-height: 100vh;
-      min-height: 100dvh;
-      padding: 1.5vh 1.5vw;
-    }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        color: var(--led-white);
+        font-family: "Orbitron", "Courier New", monospace;
+        overflow: hidden;
+        -webkit-tap-highlight-color: transparent;
+      }
 
-    .scoreboard {
-      width: 100%;
-      height: 100%;
-      display: grid;
-      grid-template-columns: 1fr;
-      grid-template-rows: 1fr auto 1fr auto;
-      gap: 1.4vh;
-    }
+      body {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.2vh 1.2vw;
+      }
 
-    .panel {
-      background: linear-gradient(160deg, #121212, var(--panel));
-      border: 2px solid var(--line);
-      border-radius: 18px;
-      box-shadow: 0 0 16px rgba(255, 91, 31, 0.28), inset 0 0 22px rgba(255, 91, 31, 0.12);
-    }
+      /* Subtle arena ambient light */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 60% 40% at 50% 0%,
+            rgba(0, 229, 255, 0.03),
+            transparent
+          ),
+          radial-gradient(
+            ellipse 50% 30% at 50% 100%,
+            rgba(255, 191, 0, 0.02),
+            transparent
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
 
-    .team-card {
-      padding: 1.6vh 1.2vw;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 1.1vh;
-    }
-
-    .team-name {
-      width: 100%;
-      border: 1px solid rgba(255, 122, 56, 0.85);
-      border-radius: 12px;
-      background: #050505;
-      color: var(--text);
-      text-transform: uppercase;
-      text-align: center;
-      padding: 1.1vh 1vw;
-      font-size: clamp(16px, 2.3vw, 30px);
-      letter-spacing: 0.08em;
-      font-weight: 700;
-    }
-
-    .team-name:focus,
-    .btn:focus-visible,
-    .time-input:focus {
-      outline: 2px solid #ff5b1f;
-      outline-offset: 2px;
-    }
-
-    .score {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(76px, 22vw, 220px);
-      line-height: 1;
-      color: var(--score);
-      text-shadow: 0 0 10px rgba(255, 91, 31, 0.9), 0 0 24px rgba(255, 91, 31, 0.75), 0 0 38px rgba(255, 91, 31, 0.58);
-      user-select: none;
-    }
-
-    .score-actions {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1vh;
-    }
-
-    .center-panel {
-      padding: 1.4vh 1.1vw;
-      display: grid;
-      gap: 1vh;
-      align-content: center;
-    }
-
-    .timer-display {
-      text-align: center;
-      font-size: clamp(48px, 10vw, 116px);
-      color: var(--timer);
-      letter-spacing: 0.08em;
-      text-shadow: 0 0 8px rgba(255, 226, 94, 0.82), 0 0 20px rgba(255, 226, 94, 0.6);
-      user-select: none;
-    }
-
-    .timer-set {
-      display: grid;
-      grid-template-columns: 1fr;
-    }
-
-    .time-input {
-      min-height: 6.5vh;
-      border: 1px solid rgba(255, 122, 56, 0.85);
-      border-radius: 10px;
-      background: #050505;
-      color: var(--text);
-      text-align: center;
-      font-size: clamp(16px, 2.1vw, 26px);
-      font-family: inherit;
-      font-weight: 700;
-    }
-
-    .time-label {
-      font-size: clamp(14px, 1.6vw, 18px);
-      color: #ffd4be;
-    }
-
-    .time-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1vh;
-    }
-
-    .time-field {
-      display: grid;
-      gap: 0.5vh;
-    }
-
-    .timer-controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1vh;
-    }
-
-    .btn {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #272727, #0d0d0d);
-      color: var(--text);
-      font-family: inherit;
-      font-size: clamp(16px, 2.2vw, 28px);
-      font-weight: 700;
-      min-height: 7vh;
-      cursor: pointer;
-      text-shadow: 0 0 8px rgba(255, 91, 31, 0.5);
-      box-shadow: 0 0 10px rgba(255, 91, 31, 0.16);
-      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
-      padding: 0.5em 0.3em;
-    }
-
-    .btn:hover {
-      border-color: #ff5b1f;
-      box-shadow: 0 0 14px rgba(255, 91, 31, 0.42);
-    }
-
-    .btn:active { transform: translateY(1px) scale(0.99); }
-
-    .timer-btn {
-      border-color: #e5b900;
-      color: #fff3bb;
-      text-shadow: 0 0 8px rgba(255, 226, 94, 0.52);
-      box-shadow: 0 0 10px rgba(255, 226, 94, 0.2);
-    }
-
-    .whistle-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1vh;
-    }
-
-    .whistle-btn {
-      min-height: 8.8vh;
-      font-size: clamp(16px, 2.1vw, 28px);
-    }
-
-    .whistle-play-btn {
-      border-color: #ff7a38;
-      color: #ffe5d8;
-      background: linear-gradient(180deg, #5f2700, #2a1300);
-      box-shadow: 0 0 16px rgba(255, 122, 56, 0.34);
-    }
-
-    .whistle-toggle-btn {
-      border-color: var(--danger);
-      color: #ffe5e5;
-      background: linear-gradient(180deg, #5a0000, #260000);
-      text-shadow: 0 0 10px rgba(255, 36, 36, 0.65);
-      box-shadow: 0 0 16px rgba(255, 36, 36, 0.34);
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 2vh 2vw;
-      z-index: 20;
-    }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
-    .timer-modal {
-      width: min(92vw, 420px);
-      border: 2px solid var(--line);
-      border-radius: 16px;
-      background: linear-gradient(160deg, #151515, #080808);
-      box-shadow: 0 0 22px rgba(255, 91, 31, 0.32);
-      padding: 1.5vh 1.2vw;
-      display: grid;
-      gap: 1.2vh;
-    }
-
-    .modal-title {
-      margin: 0;
-      text-align: center;
-      letter-spacing: 0.06em;
-      font-size: clamp(18px, 2.3vw, 26px);
-      color: #ffe2d2;
-    }
-
-    .modal-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1vh;
-    }
-
-    .footer-actions {
-      display: grid;
-      grid-template-columns: 1fr;
-      max-width: 520px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    .reset-btn {
-      border-color: var(--danger);
-      color: #ffd0d0;
-      text-shadow: 0 0 10px rgba(255, 58, 58, 0.5);
-      box-shadow: 0 0 14px rgba(255, 58, 58, 0.22);
-      min-height: 8vh;
-    }
-
-    @media (orientation: landscape) {
+      /* ========================================
+       SCOREBOARD — Main Frame
+       ======================================== */
       .scoreboard {
-        grid-template-columns: 1fr minmax(280px, 30vw) 1fr;
-        grid-template-rows: 1fr auto;
-        gap: 1.5vw;
+        width: 100%;
+        height: 100%;
+        max-width: 1400px;
+        max-height: 900px;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto 1fr auto;
+        gap: 0;
+        position: relative;
+        z-index: 1;
+        background: var(--panel-bg);
+        border: 3px solid var(--frame-edge);
+        border-radius: 8px;
+        box-shadow:
+          inset 0 0 60px rgba(0, 0, 0, 0.8),
+          0 0 0 1px var(--frame),
+          0 0 0 4px var(--metal-dark),
+          0 0 0 5px var(--frame-edge),
+          0 4px 30px rgba(0, 0, 0, 0.9),
+          0 0 80px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
       }
 
-      .home-team { grid-column: 1; grid-row: 1; }
-      .center-panel { grid-column: 2; grid-row: 1; }
-      .away-team { grid-column: 3; grid-row: 1; }
+      /* Corner screws */
+      .scoreboard::before,
+      .scoreboard::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 35% 35%,
+          var(--frame-highlight),
+          var(--screw) 60%,
+          var(--frame) 100%
+        );
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        z-index: 10;
+      }
+      .scoreboard::before {
+        top: 8px;
+        left: 8px;
+      }
+      .scoreboard::after {
+        top: 8px;
+        right: 8px;
+      }
 
+      /* ========================================
+       PANELS — Team Cards
+       ======================================== */
+      .panel {
+        background: transparent;
+        position: relative;
+      }
+
+      .team-card {
+        padding: 1.8vh 2vw 1.2vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 0.8vh;
+        position: relative;
+      }
+
+      /* Separator lines between panels */
+      .center-panel {
+        border-top: 1px solid var(--frame-edge);
+        border-bottom: 1px solid var(--frame-edge);
+      }
+
+      /* ========================================
+       TEAM NAME — LED Label Style
+       ======================================== */
+      .team-label {
+        text-align: center;
+        font-size: clamp(10px, 1.4vw, 14px);
+        font-weight: 500;
+        color: var(--led-label);
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        margin-bottom: 0.3vh;
+      }
+
+      .team-name {
+        width: 100%;
+        border: 1px solid var(--frame-edge);
+        border-radius: 4px;
+        background: #050505;
+        color: var(--led-amber);
+        text-transform: uppercase;
+        text-align: center;
+        padding: 0.8vh 1vw;
+        font-size: clamp(14px, 2vw, 24px);
+        letter-spacing: 0.12em;
+        font-weight: 700;
+        font-family: "Orbitron", monospace;
+        text-shadow:
+          0 0 7px var(--glow-amber),
+          0 0 20px rgba(255, 191, 0, 0.15);
+        transition: border-color 200ms;
+      }
+
+      .team-name:focus {
+        outline: none;
+        border-color: var(--led-amber);
+        box-shadow: 0 0 10px rgba(255, 191, 0, 0.2);
+      }
+
+      /* ========================================
+       SCORE — Giant LED Numbers
+       ======================================== */
+      .score {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(72px, 22vw, 200px);
+        line-height: 1;
+        letter-spacing: 0.04em;
+        color: var(--led-green);
+        user-select: none;
+        position: relative;
+        text-shadow:
+          0 0 10px var(--glow-green),
+          0 0 30px var(--glow-green),
+          0 0 60px rgba(0, 255, 65, 0.15),
+          0 0 100px rgba(0, 255, 65, 0.08);
+        font-family: "DSEG7-Classic", "Orbitron", monospace;
+        font-weight: bold;
+      }
+
+      /* Dim "ghost" segments behind score for LED realism */
+      .score::before {
+        content: attr(data-ghost);
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "DSEG7-Classic", monospace;
+        font-size: inherit;
+        letter-spacing: inherit;
+        font-weight: bold;
+        color: var(--led-green-dim);
+        opacity: 0.25;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .score > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Scale down font for 3-digit scores */
+      .score[data-digits="3"] {
+        font-size: clamp(48px, 14vw, 130px);
+      }
+
+      /* ========================================
+       SCORE ACTIONS — +1, +2, +3 Buttons
+       ======================================== */
+      .score-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6vh;
+      }
+
+      /* ========================================
+       BUTTONS — Arcade/Industrial Style
+       ======================================== */
+      .btn {
+        border: 1px solid var(--frame-edge);
+        border-radius: 6px;
+        background: linear-gradient(
+          180deg,
+          var(--metal-light) 0%,
+          var(--metal-dark) 100%
+        );
+        color: var(--led-white);
+        font-family: "Orbitron", monospace;
+        font-size: clamp(13px, 1.8vw, 20px);
+        font-weight: 700;
+        min-height: 6.5vh;
+        cursor: pointer;
+        padding: 0.5em 0.4em;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.06),
+          0 2px 4px rgba(0, 0, 0, 0.5);
+        transition: all 100ms ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.04),
+          transparent 50%
+        );
+        pointer-events: none;
+      }
+
+      .btn:hover {
+        border-color: var(--frame-highlight);
+        background: linear-gradient(
+          180deg,
+          var(--metal-mid) 0%,
+          var(--metal-dark) 100%
+        );
+      }
+
+      .btn:active {
+        transform: translateY(1px);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .btn:focus-visible {
+        outline: 2px solid var(--led-cyan);
+        outline-offset: 2px;
+      }
+
+      /* Score buttons — Green accent */
+      .score-actions .btn {
+        color: var(--led-green);
+        border-color: rgba(0, 255, 65, 0.2);
+        text-shadow: 0 0 8px var(--glow-green);
+      }
+      .score-actions .btn:hover {
+        border-color: rgba(0, 255, 65, 0.4);
+        background: linear-gradient(180deg, #0a1a0d 0%, #050d07 100%);
+      }
+
+      /* ========================================
+       CENTER PANEL — Timer & Controls
+       ======================================== */
+      .center-panel {
+        padding: 1.5vh 2vw;
+        display: grid;
+        gap: 0.8vh;
+        align-content: center;
+        background: rgba(5, 5, 5, 0.6);
+      }
+
+      /* Timer label */
+      .timer-label-text {
+        text-align: center;
+        font-size: clamp(9px, 1.2vw, 12px);
+        font-weight: 500;
+        color: var(--led-label);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+      }
+
+      /* ========================================
+       TIMER DISPLAY — Amber LED Clock
+       ======================================== */
+      .timer-display {
+        text-align: center;
+        font-size: clamp(48px, 10vw, 110px);
+        color: var(--led-amber);
+        letter-spacing: 0.08em;
+        font-family: "DSEG7-Classic", "Orbitron", monospace;
+        font-weight: bold;
+        user-select: none;
+        position: relative;
+        text-shadow:
+          0 0 10px var(--glow-amber),
+          0 0 30px var(--glow-amber),
+          0 0 60px rgba(255, 191, 0, 0.12),
+          0 0 100px rgba(255, 191, 0, 0.06);
+      }
+
+      /* Ghost segments for timer */
+      .timer-display::before {
+        content: "88:88";
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "DSEG7-Classic", monospace;
+        font-size: inherit;
+        letter-spacing: inherit;
+        font-weight: bold;
+        color: var(--led-amber-dim);
+        opacity: 0.2;
+        pointer-events: none;
+      }
+
+      /* Timer danger state (< 60s) */
+      .timer-display.danger {
+        color: var(--led-red);
+        text-shadow:
+          0 0 10px var(--glow-red),
+          0 0 30px var(--glow-red),
+          0 0 60px rgba(255, 45, 45, 0.15);
+        animation: timerPulse 1s ease-in-out infinite;
+      }
+
+      @keyframes timerPulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+
+      /* ========================================
+       TIMER SET & CONTROLS
+       ======================================== */
+      .timer-set {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .time-input {
+        min-height: 6vh;
+        border: 1px solid var(--frame-edge);
+        border-radius: 4px;
+        background: #050505;
+        color: var(--led-amber);
+        text-align: center;
+        font-size: clamp(14px, 2vw, 22px);
+        font-family: "DSEG7-Classic", "Orbitron", monospace;
+        font-weight: bold;
+        text-shadow: 0 0 6px var(--glow-amber);
+        transition: border-color 200ms;
+      }
+
+      .time-input:focus {
+        outline: none;
+        border-color: var(--led-amber);
+        box-shadow: 0 0 10px rgba(255, 191, 0, 0.15);
+      }
+
+      .time-label {
+        font-size: clamp(10px, 1.3vw, 14px);
+        color: var(--led-label);
+        letter-spacing: 0.08em;
+      }
+
+      .time-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8vh;
+      }
+
+      .time-field {
+        display: grid;
+        gap: 0.4vh;
+      }
+
+      .timer-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6vh;
+      }
+
+      /* Timer buttons — Amber accent */
+      .timer-btn {
+        color: var(--led-amber);
+        border-color: rgba(255, 191, 0, 0.25);
+        text-shadow: 0 0 8px var(--glow-amber);
+      }
+      .timer-btn:hover {
+        border-color: rgba(255, 191, 0, 0.45);
+        background: linear-gradient(180deg, #1a1500 0%, #0d0b00 100%);
+      }
+
+      /* ========================================
+       MODAL — Timer Setup
+       ======================================== */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 2vh 2vw;
+        z-index: 20;
+        backdrop-filter: blur(4px);
+      }
+
+      .modal-backdrop.open {
+        display: flex;
+      }
+
+      .timer-modal {
+        width: min(92vw, 400px);
+        border: 2px solid var(--frame-edge);
+        border-radius: 8px;
+        background: linear-gradient(180deg, #0e1014 0%, #080a0d 100%);
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.03),
+          0 0 40px rgba(0, 229, 255, 0.08),
+          0 20px 60px rgba(0, 0, 0, 0.8);
+        padding: 2vh 3vw;
+        display: grid;
+        gap: 1.5vh;
+      }
+
+      .modal-title {
+        margin: 0;
+        text-align: center;
+        letter-spacing: 0.15em;
+        font-size: clamp(16px, 2.2vw, 22px);
+        color: var(--led-cyan);
+        text-shadow: 0 0 10px var(--glow-cyan);
+        font-weight: 700;
+      }
+
+      .modal-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8vh;
+      }
+
+      /* ========================================
+       FOOTER — Reset & Credit
+       ======================================== */
       .footer-actions {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.6vh;
+        padding: 0.8vh 2vw 1.2vh;
+        align-items: center;
+      }
+
+      .reset-btn {
+        color: var(--led-red);
+        border-color: rgba(255, 45, 45, 0.3);
+        text-shadow: 0 0 8px var(--glow-red);
+        min-height: 7vh;
+        font-size: clamp(13px, 1.8vw, 20px);
+      }
+      .reset-btn:hover {
+        border-color: rgba(255, 45, 45, 0.5);
+        background: linear-gradient(180deg, #1e0707 0%, #100303 100%);
+      }
+
+      /* Language toggle button */
+      .lang-btn {
+        color: var(--led-cyan);
+        border-color: rgba(0, 229, 255, 0.3);
+        text-shadow: 0 0 8px var(--glow-cyan);
+        min-height: 7vh;
+        min-width: 7vh;
+        font-size: clamp(11px, 1.4vw, 16px);
+        padding: 0.4em 0.6em;
+      }
+      .lang-btn:hover {
+        border-color: rgba(0, 229, 255, 0.5);
+        background: linear-gradient(180deg, #071a1e 0%, #030d10 100%);
+      }
+
+      .footer-credit {
         grid-column: 1 / -1;
-        grid-row: 2;
+        text-align: center;
+        font-size: clamp(8px, 1vw, 11px);
+        color: var(--led-label);
+        opacity: 0.5;
+        letter-spacing: 0.1em;
+        padding-top: 0.3vh;
       }
 
-      .score { font-size: clamp(80px, 16vw, 220px); }
-      .timer-display { font-size: clamp(56px, 7vw, 108px); }
-      .btn { min-height: 9vh; font-size: clamp(16px, 1.6vw, 24px); }
-    }
-  </style>
-</head>
-<body>
-  <main class="scoreboard" aria-label="Bảng điểm bóng rổ">
-    <section class="panel team-card home-team" aria-label="Đội nhà">
-      <input id="home-name" class="team-name" type="text" maxlength="18" value="HOME" aria-label="Tên đội nhà" />
-      <div id="home-score" class="score" aria-live="polite">0</div>
-      <div class="score-actions" role="group" aria-label="Nút cộng điểm đội nhà">
-        <button class="btn" data-team="home" data-points="1" type="button">+1</button>
-        <button class="btn" data-team="home" data-points="2" type="button">+2</button>
-        <button class="btn" data-team="home" data-points="3" type="button">+3</button>
-      </div>
-    </section>
-
-    <section class="panel center-panel" aria-label="Đồng hồ và còi">
-      <div id="timer-display" class="timer-display" aria-live="polite">00:00</div>
-      <div class="timer-set" aria-label="Thiết lập thời gian">
-        <button id="open-timer-modal-btn" class="btn timer-btn" type="button">SET TIMER</button>
-      </div>
-      <div class="timer-controls" role="group" aria-label="Điều khiển đồng hồ">
-        <button id="toggle-timer-btn" class="btn timer-btn" type="button">START</button>
-        <button id="reset-timer-btn" class="btn timer-btn" type="button">RESET TIMER</button>
-      </div>
-      <div class="whistle-actions" role="group" aria-label="Nút còi trọng tài">
-        <button id="whistle-play-btn" class="btn whistle-btn whistle-play-btn" type="button">WHISTLE PLAY</button>
-        <button id="whistle-toggle-btn" class="btn whistle-btn whistle-toggle-btn" type="button">WHISTLE TOGGLE</button>
-      </div>
-    </section>
-
-    <section class="panel team-card away-team" aria-label="Đội khách">
-      <input id="away-name" class="team-name" type="text" maxlength="18" value="AWAY" aria-label="Tên đội khách" />
-      <div id="away-score" class="score" aria-live="polite">0</div>
-      <div class="score-actions" role="group" aria-label="Nút cộng điểm đội khách">
-        <button class="btn" data-team="away" data-points="1" type="button">+1</button>
-        <button class="btn" data-team="away" data-points="2" type="button">+2</button>
-        <button class="btn" data-team="away" data-points="3" type="button">+3</button>
-      </div>
-    </section>
-
-    <div class="footer-actions">
-      <button id="reset-score-btn" class="btn reset-btn" type="button">RESET SCORE</button>
-    </div>
-  </main>
-
-  <div id="timer-modal-backdrop" class="modal-backdrop" role="presentation">
-    <div id="timer-modal" class="timer-modal" role="dialog" aria-modal="true" aria-labelledby="timer-modal-title">
-      <h2 id="timer-modal-title" class="modal-title">SET TIMER</h2>
-      <div class="time-grid">
-        <label class="time-field">
-          <span class="time-label">Phút</span>
-          <input id="minutes-input" class="time-input" type="number" min="0" max="99" placeholder="10" aria-label="Phút" />
-        </label>
-      </div>
-      <div class="modal-actions">
-        <button id="cancel-timer-btn" class="btn" type="button">HỦY</button>
-        <button id="set-timer-btn" class="btn timer-btn" type="button">LƯU</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const STORAGE_KEY = "bbs_state_v3";
-    const WHISTLE_AUDIO_DATA_URI = "data:audio/wav;base64,UklGRl4AAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YToAAAAAABQUFRUVFRUVFRUWFhYWFhUVFRUVFRUWFhYWFhUVFRUVFRUVFRUVFRUWFhYWFhUVFRUVFRUVFRUVFRUVFRUVFRU=";
-    const homeNameInput = document.getElementById("home-name");
-    const awayNameInput = document.getElementById("away-name");
-    const homeScoreElement = document.getElementById("home-score");
-    const awayScoreElement = document.getElementById("away-score");
-    const timerDisplayElement = document.getElementById("timer-display");
-    const openTimerModalButton = document.getElementById("open-timer-modal-btn");
-    const minutesInput = document.getElementById("minutes-input");
-    const timerModalBackdrop = document.getElementById("timer-modal-backdrop");
-    const timerModal = document.getElementById("timer-modal");
-    const cancelTimerButton = document.getElementById("cancel-timer-btn");
-    const setTimerButton = document.getElementById("set-timer-btn");
-    const toggleTimerButton = document.getElementById("toggle-timer-btn");
-    const resetTimerButton = document.getElementById("reset-timer-btn");
-    const whistlePlayButton = document.getElementById("whistle-play-btn");
-    const whistleToggleButton = document.getElementById("whistle-toggle-btn");
-    const resetScoreButton = document.getElementById("reset-score-btn");
-
-    const whistleAudio = new Audio(WHISTLE_AUDIO_DATA_URI);
-    whistleAudio.preload = "auto";
-
-    let tickIntervalId = null;
-    let audioContext = null;
-
-    const state = {
-      homeName: "HOME",
-      awayName: "AWAY",
-      homeScore: 0,
-      awayScore: 0,
-      timerInitialSeconds: 0,
-      timerRemainingSeconds: 0,
-      timerRunning: false,
-      timerEndAt: null,
-      timerConfigured: false,
-    };
-
-    function loadState() {
-      const rawValue = localStorage.getItem(STORAGE_KEY);
-      if (!rawValue) return;
-
-      try {
-        const parsed = JSON.parse(rawValue);
-        state.homeName = (parsed.homeName || "HOME").toString().slice(0, 18);
-        state.awayName = (parsed.awayName || "AWAY").toString().slice(0, 18);
-        state.homeScore = Math.max(0, Number(parsed.homeScore) || 0);
-        state.awayScore = Math.max(0, Number(parsed.awayScore) || 0);
-        state.timerInitialSeconds = Math.max(0, Number(parsed.timerInitialSeconds) || 0);
-        state.timerRemainingSeconds = Math.max(0, Number(parsed.timerRemainingSeconds) || 0);
-        state.timerRunning = Boolean(parsed.timerRunning);
-        state.timerEndAt = Number(parsed.timerEndAt) || null;
-        state.timerConfigured = Boolean(parsed.timerConfigured) && state.timerInitialSeconds > 0;
-      } catch (_) {
-        localStorage.removeItem(STORAGE_KEY);
+      /* ========================================
+       SCANLINE OVERLAY — CRT/LED Effect
+       ======================================== */
+      .scanlines {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 5;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.08) 2px,
+          rgba(0, 0, 0, 0.08) 4px
+        );
+        border-radius: 8px;
       }
-    }
 
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    function formatTimer(totalSeconds) {
-      const safeSeconds = Math.max(0, Math.floor(totalSeconds));
-      const minutes = Math.floor(safeSeconds / 60);
-      const seconds = safeSeconds % 60;
-      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    }
-
-    function sanitizeTeamName(name, fallbackName) {
-      const trimmed = name.trim().slice(0, 18);
-      return trimmed || fallbackName;
-    }
-
-    function render() {
-      homeNameInput.value = state.homeName;
-      awayNameInput.value = state.awayName;
-      homeScoreElement.textContent = state.homeScore;
-      awayScoreElement.textContent = state.awayScore;
-      timerDisplayElement.textContent = formatTimer(state.timerRemainingSeconds);
-      toggleTimerButton.textContent = state.timerRunning ? "PAUSE" : "START";
-    }
-
-    function syncTimerInputs() {
-      minutesInput.value = state.timerConfigured ? Math.floor(state.timerInitialSeconds / 60) : "";
-    }
-
-    function openTimerModal() {
-      syncTimerInputs();
-      timerModalBackdrop.classList.add("open");
-      setTimeout(() => minutesInput.focus(), 0);
-    }
-
-    function closeTimerModal() {
-      timerModalBackdrop.classList.remove("open");
-      openTimerModalButton.focus();
-    }
-
-    function stopTicking() {
-      if (!tickIntervalId) return;
-      clearInterval(tickIntervalId);
-      tickIntervalId = null;
-    }
-
-    function getAudioContext() {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return null;
-      if (!audioContext) audioContext = new AudioCtx();
-      if (audioContext.state === "suspended") audioContext.resume();
-      return audioContext;
-    }
-
-    function playWhistleSound(durationMs) {
-      try {
-        whistleAudio.currentTime = 0;
-        const playPromise = whistleAudio.play();
-        if (playPromise && typeof playPromise.catch === "function") {
-          playPromise.catch(() => {});
+      /* ========================================
+       LANDSCAPE LAYOUT
+       ======================================== */
+      @media (orientation: landscape) {
+        .scoreboard {
+          grid-template-columns: 1fr minmax(240px, 28vw) 1fr;
+          grid-template-rows: 1fr auto;
+          gap: 0;
         }
-        if (durationMs >= 1200) {
-          setTimeout(() => {
-            whistleAudio.currentTime = 0;
-            whistleAudio.play().catch(() => {});
-          }, 500);
+
+        .home-team {
+          grid-column: 1;
+          grid-row: 1;
+          border-right: 1px solid var(--frame-edge);
         }
-      } catch (_) {}
 
-      const context = getAudioContext();
-      if (!context) return;
+        .center-panel {
+          grid-column: 2;
+          grid-row: 1;
+          border-top: none;
+          border-bottom: none;
+          border-left: 1px solid var(--frame-edge);
+          border-right: 1px solid var(--frame-edge);
+        }
 
-      const now = context.currentTime;
-      const durationSeconds = Math.max(0.2, durationMs / 1000);
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
+        .away-team {
+          grid-column: 3;
+          grid-row: 1;
+          border-left: 1px solid var(--frame-edge);
+        }
 
-      oscillator.type = "square";
-      oscillator.frequency.setValueAtTime(2500, now);
-      oscillator.frequency.exponentialRampToValueAtTime(2100, now + durationSeconds);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.08, now + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSeconds);
+        .footer-actions {
+          grid-column: 1 / -1;
+          grid-row: 2;
+          border-top: 1px solid var(--frame-edge);
+          max-width: 100%;
+        }
 
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start(now);
-      oscillator.stop(now + durationSeconds);
-    }
+        .score {
+          font-size: clamp(80px, 14vw, 200px);
+        }
 
-    function addPoints(team, points) {
-      if (team === "home") {
-        state.homeScore = Math.max(0, state.homeScore + points);
-      } else {
-        state.awayScore = Math.max(0, state.awayScore + points);
-      }
-      render();
-      saveState();
-    }
+        .score[data-digits="3"] {
+          font-size: clamp(52px, 9vw, 130px);
+        }
 
-    function setTimer(totalSeconds) {
-      const safeSeconds = Math.max(0, Math.floor(totalSeconds));
-      state.timerInitialSeconds = safeSeconds;
-      state.timerRemainingSeconds = safeSeconds;
-      state.timerConfigured = safeSeconds > 0;
-      state.timerRunning = false;
-      state.timerEndAt = null;
-      stopTicking();
-      render();
-      saveState();
-    }
+        .timer-display {
+          font-size: clamp(50px, 6.5vw, 100px);
+        }
 
-    function updateTimerFromClock() {
-      if (!state.timerRunning || !state.timerEndAt) return;
+        .btn {
+          min-height: 7.5vh;
+          font-size: clamp(12px, 1.3vw, 18px);
+        }
 
-      const nextRemaining = Math.max(0, Math.ceil((state.timerEndAt - Date.now()) / 1000));
-      if (nextRemaining !== state.timerRemainingSeconds) {
-        state.timerRemainingSeconds = nextRemaining;
-        render();
-        saveState();
+        .team-name {
+          font-size: clamp(12px, 1.5vw, 20px);
+        }
       }
 
-      if (nextRemaining === 0) {
-        state.timerRunning = false;
-        state.timerEndAt = null;
-        stopTicking();
-        playWhistleSound(1500);
-        render();
-        saveState();
+      /* ========================================
+       SMALL SCREEN TWEAKS
+       ======================================== */
+      @media (max-width: 480px) and (orientation: portrait) {
+        body {
+          padding: 0.6vh 0.6vw;
+        }
+
+        .team-card {
+          padding: 1vh 1.5vw 0.8vh;
+        }
+
+        .score {
+          font-size: clamp(64px, 25vw, 140px);
+        }
+
+        .score[data-digits="3"] {
+          font-size: clamp(40px, 16vw, 95px);
+        }
+
+        .btn {
+          min-height: 5.8vh;
+          font-size: clamp(12px, 3.8vw, 17px);
+        }
       }
-    }
+    </style>
+  </head>
+  <body>
+    <main class="scoreboard" aria-label="Bảng điểm bóng rổ">
+      <!-- Scanline overlay for LED realism -->
+      <div class="scanlines" aria-hidden="true"></div>
 
-    function startTimer() {
-      if (!state.timerConfigured || state.timerInitialSeconds <= 0) {
-        alert("Vui lòng SET thời gian trước khi START.");
-        return;
+      <!-- ====== HOME TEAM ====== -->
+      <section class="panel team-card home-team" aria-label="Đội nhà">
+        <div>
+          <input
+            id="home-name"
+            class="team-name"
+            type="text"
+            maxlength="18"
+            value="HOME"
+            aria-label="Tên đội nhà"
+          />
+        </div>
+        <div id="home-score" class="score" aria-live="polite">0</div>
+        <div
+          class="score-actions"
+          role="group"
+          aria-label="Nút cộng điểm đội nhà"
+        >
+          <button class="btn" data-team="home" data-points="1" type="button">
+            +1
+          </button>
+          <button class="btn" data-team="home" data-points="2" type="button">
+            +2
+          </button>
+          <button class="btn" data-team="home" data-points="3" type="button">
+            +3
+          </button>
+        </div>
+      </section>
+
+      <!-- ====== CENTER — GAME CLOCK ====== -->
+      <section class="panel center-panel" aria-label="Đồng hồ">
+        <div id="timer-label" class="timer-label-text">Game Clock</div>
+        <div id="timer-display" class="timer-display" aria-live="polite">
+          00:00
+        </div>
+        <div class="timer-set">
+          <button id="open-timer-modal-btn" class="btn timer-btn" type="button">
+            SET TIMER
+          </button>
+        </div>
+        <div
+          class="timer-controls"
+          role="group"
+          aria-label="Điều khiển đồng hồ"
+        >
+          <button id="toggle-timer-btn" class="btn timer-btn" type="button">
+            START
+          </button>
+          <button id="reset-timer-btn" class="btn timer-btn" type="button">
+            RESET
+          </button>
+        </div>
+      </section>
+
+      <!-- ====== AWAY TEAM ====== -->
+      <section class="panel team-card away-team" aria-label="Đội khách">
+        <div>
+          <input
+            id="away-name"
+            class="team-name"
+            type="text"
+            maxlength="18"
+            value="AWAY"
+            aria-label="Tên đội khách"
+          />
+        </div>
+        <div id="away-score" class="score" aria-live="polite">0</div>
+        <div
+          class="score-actions"
+          role="group"
+          aria-label="Nút cộng điểm đội khách"
+        >
+          <button class="btn" data-team="away" data-points="1" type="button">
+            +1
+          </button>
+          <button class="btn" data-team="away" data-points="2" type="button">
+            +2
+          </button>
+          <button class="btn" data-team="away" data-points="3" type="button">
+            +3
+          </button>
+        </div>
+      </section>
+
+      <!-- ====== FOOTER ====== -->
+      <div class="footer-actions">
+        <button id="reset-score-btn" class="btn reset-btn" type="button">
+          ⟲ RESET SCORE
+        </button>
+        <button id="lang-btn" class="btn lang-btn" type="button">
+          🌐 VI
+        </button>
+        <div class="footer-credit">Developed by hungvuongg71</div>
+      </div>
+    </main>
+
+    <!-- ====== TIMER MODAL ====== -->
+    <div id="timer-modal-backdrop" class="modal-backdrop" role="presentation">
+      <div
+        id="timer-modal"
+        class="timer-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="timer-modal-title"
+      >
+        <h2 id="timer-modal-title" class="modal-title">SET TIMER</h2>
+        <div class="time-grid">
+          <label class="time-field">
+            <span id="minutes-label" class="time-label">Minutes</span>
+            <input
+              id="minutes-input"
+              class="time-input"
+              type="number"
+              min="0"
+              max="99"
+              placeholder="10"
+              aria-label="Minutes"
+            />
+          </label>
+          <label class="time-field">
+            <span id="seconds-label" class="time-label">Seconds</span>
+            <input
+              id="seconds-input"
+              class="time-input"
+              type="number"
+              min="0"
+              max="59"
+              placeholder="00"
+              aria-label="Seconds"
+            />
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button id="cancel-timer-btn" class="btn" type="button">CANCEL</button>
+          <button id="set-timer-btn" class="btn timer-btn" type="button">
+            SAVE
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ========================================
+       I18N — Internationalization
+       ======================================== */
+      const I18N = {
+        en: {
+          gameClock: "Game Clock",
+          setTimer: "SET TIMER",
+          start: "START",
+          pause: "PAUSE",
+          reset: "RESET",
+          resetScore: "⟲ RESET SCORE",
+          modalTitle: "SET TIMER",
+          minutes: "Minutes",
+          seconds: "Seconds",
+          cancel: "CANCEL",
+          save: "SAVE",
+          confirmReset: "Are you sure you want to reset the score to 0?",
+          alertSetTime: "Please SET a time before pressing START.",
+          langLabel: "🌐 VI",
+        },
+        vi: {
+          gameClock: "Đồng Hồ",
+          setTimer: "CÀI GIỜ",
+          start: "BẮT ĐẦU",
+          pause: "TẠM DỪNG",
+          reset: "ĐẶT LẠI",
+          resetScore: "⟲ ĐẶT LẠI ĐIỂM",
+          modalTitle: "CÀI GIỜ",
+          minutes: "Phút",
+          seconds: "Giây",
+          cancel: "HỦY",
+          save: "LƯU",
+          confirmReset: "Bạn có chắc muốn reset điểm số về 0?",
+          alertSetTime: "Vui lòng CÀI GIỜ trước khi BẮT ĐẦU.",
+          langLabel: "🌐 EN",
+        },
       }
-      if (state.timerRemainingSeconds <= 0) {
-        state.timerRemainingSeconds = state.timerInitialSeconds;
+
+      /* ========================================
+       CONSTANTS & DOM REFERENCES
+       ======================================== */
+      const STORAGE_KEY = "bbs_state_v4"
+      const homeNameInput = document.getElementById("home-name")
+      const awayNameInput = document.getElementById("away-name")
+      const homeScoreElement = document.getElementById("home-score")
+      const awayScoreElement = document.getElementById("away-score")
+      const timerDisplayElement = document.getElementById("timer-display")
+      const timerLabelElement = document.getElementById("timer-label")
+      const openTimerModalButton = document.getElementById("open-timer-modal-btn")
+      const minutesInput = document.getElementById("minutes-input")
+      const secondsInput = document.getElementById("seconds-input")
+      const minutesLabel = document.getElementById("minutes-label")
+      const secondsLabel = document.getElementById("seconds-label")
+      const timerModalBackdrop = document.getElementById("timer-modal-backdrop")
+      const timerModal = document.getElementById("timer-modal")
+      const timerModalTitle = document.getElementById("timer-modal-title")
+      const cancelTimerButton = document.getElementById("cancel-timer-btn")
+      const setTimerButton = document.getElementById("set-timer-btn")
+      const toggleTimerButton = document.getElementById("toggle-timer-btn")
+      const resetTimerButton = document.getElementById("reset-timer-btn")
+      const resetScoreButton = document.getElementById("reset-score-btn")
+      const langButton = document.getElementById("lang-btn")
+
+      let tickIntervalId = null
+
+      /* ========================================
+       STATE
+       ======================================== */
+      const state = {
+        homeName: "HOME",
+        awayName: "AWAY",
+        homeScore: 0,
+        awayScore: 0,
+        timerInitialSeconds: 0,
+        timerRemainingSeconds: 0,
+        timerRunning: false,
+        timerEndAt: null,
+        timerConfigured: false,
+        lang: "en",
       }
 
-      state.timerRunning = true;
-      state.timerEndAt = Date.now() + state.timerRemainingSeconds * 1000;
-      stopTicking();
-      tickIntervalId = setInterval(updateTimerFromClock, 250);
-      render();
-      saveState();
-    }
+      /* ========================================
+       PERSISTENCE
+       ======================================== */
+      function loadState() {
+        const rawValue = localStorage.getItem(STORAGE_KEY)
+        if (!rawValue) return
 
-    function pauseTimer() {
-      if (!state.timerRunning) return;
-      updateTimerFromClock();
-      state.timerRunning = false;
-      state.timerEndAt = null;
-      stopTicking();
-      render();
-      saveState();
-    }
-
-    function resetTimer() {
-      if (!state.timerConfigured) {
-        setTimer(0);
-        return;
+        try {
+          const parsed = JSON.parse(rawValue)
+          state.homeName = (parsed.homeName || "HOME").toString().slice(0, 18)
+          state.awayName = (parsed.awayName || "AWAY").toString().slice(0, 18)
+          state.homeScore = Math.max(0, Number(parsed.homeScore) || 0)
+          state.awayScore = Math.max(0, Number(parsed.awayScore) || 0)
+          state.timerInitialSeconds = Math.max(
+            0,
+            Number(parsed.timerInitialSeconds) || 0,
+          )
+          state.timerRemainingSeconds = Math.max(
+            0,
+            Number(parsed.timerRemainingSeconds) || 0,
+          )
+          state.timerRunning = Boolean(parsed.timerRunning)
+          state.timerEndAt = Number(parsed.timerEndAt) || null
+          state.timerConfigured =
+            Boolean(parsed.timerConfigured) && state.timerInitialSeconds > 0
+          state.lang = parsed.lang === "vi" ? "vi" : "en"
+        } catch (_) {
+          localStorage.removeItem(STORAGE_KEY)
+        }
       }
-      state.timerRunning = false;
-      state.timerEndAt = null;
-      state.timerRemainingSeconds = state.timerInitialSeconds;
-      stopTicking();
-      render();
-      saveState();
-    }
 
-    function hydrateRunningTimer() {
-      if (!state.timerRunning || !state.timerEndAt) return;
-      const recalculated = Math.max(0, Math.ceil((state.timerEndAt - Date.now()) / 1000));
-      state.timerRemainingSeconds = recalculated;
-      if (recalculated === 0) {
-        state.timerRunning = false;
-        state.timerEndAt = null;
-        return;
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
       }
-      tickIntervalId = setInterval(updateTimerFromClock, 250);
-    }
 
-    // Event handler: cập nhật tên đội nhà khi người dùng thay đổi input.
-    homeNameInput.addEventListener("input", (event) => {
-      state.homeName = sanitizeTeamName(event.target.value, "HOME");
-      saveState();
-    });
-
-    // Event handler: cập nhật tên đội khách khi người dùng thay đổi input.
-    awayNameInput.addEventListener("input", (event) => {
-      state.awayName = sanitizeTeamName(event.target.value, "AWAY");
-      saveState();
-    });
-
-    // Event handler: xử lý nút cộng điểm +1/+2/+3 cho từng đội.
-    document.querySelectorAll(".score-actions .btn").forEach((button) => {
-      button.addEventListener("click", () => {
-        const points = Number(button.dataset.points || 0);
-        const team = button.dataset.team;
-        addPoints(team, points);
-      });
-    });
-
-    // Event handler: nhận số phút từ UI và thiết lập mốc đếm ngược.
-    setTimerButton.addEventListener("click", () => {
-      const minutes = Math.max(0, Number(minutesInput.value) || 0);
-      const cappedMinutes = Math.min(99, Math.floor(minutes));
-      setTimer(cappedMinutes * 60);
-      closeTimerModal();
-    });
-
-    // Event handler: mở popup để set thời gian trận đấu.
-    openTimerModalButton.addEventListener("click", () => {
-      openTimerModal();
-    });
-
-    // Event handler: đóng popup set timer khi bấm hủy.
-    cancelTimerButton.addEventListener("click", () => {
-      closeTimerModal();
-    });
-
-    // Event handler: đóng popup khi click ra nền tối bên ngoài.
-    timerModalBackdrop.addEventListener("click", (event) => {
-      if (event.target !== timerModalBackdrop) return;
-      closeTimerModal();
-    });
-
-    // Event handler: hỗ trợ đóng popup set timer bằng phím Escape.
-    window.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") return;
-      if (!timerModalBackdrop.classList.contains("open")) return;
-      closeTimerModal();
-    });
-
-    // Event handler: nhấn Enter trong modal sẽ lưu thời gian.
-    timerModal.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter") return;
-      event.preventDefault();
-      setTimerButton.click();
-    });
-
-    // Event handler: bắt đầu hoặc tạm dừng đồng hồ thi đấu.
-    toggleTimerButton.addEventListener("click", () => {
-      if (state.timerRunning) {
-        pauseTimer();
-      } else {
-        startTimer();
+      /* ========================================
+       HELPERS
+       ======================================== */
+      function t(key) {
+        return I18N[state.lang][key] || I18N.en[key] || key
       }
-    });
 
-    // Event handler: reset đồng hồ về thời gian đã SET.
-    resetTimerButton.addEventListener("click", () => {
-      resetTimer();
-    });
-
-    // Event handler: Còi chạy - phát còi ngắn, đồng hồ vẫn tiếp tục chạy.
-    whistlePlayButton.addEventListener("click", () => {
-      playWhistleSound(500);
-    });
-
-    // Event handler: Còi điều khiển - phát còi và toggle trạng thái dừng/chạy của đồng hồ.
-    whistleToggleButton.addEventListener("click", () => {
-      playWhistleSound(500);
-      if (state.timerRunning) {
-        pauseTimer();
-      } else {
-        startTimer();
+      function formatTimer(totalSeconds) {
+        const safeSeconds = Math.max(0, Math.floor(totalSeconds))
+        const minutes = Math.floor(safeSeconds / 60)
+        const seconds = safeSeconds % 60
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
       }
-    });
 
-    // Event handler: khởi tạo audio context sớm để giảm độ trễ khi bấm còi.
-    [whistlePlayButton, whistleToggleButton].forEach((button) => {
-      button.addEventListener("pointerdown", () => {
-        getAudioContext();
-      });
-    });
+      function sanitizeTeamName(name, fallbackName) {
+        const trimmed = name.trim().slice(0, 18)
+        return trimmed || fallbackName
+      }
 
-    // Event handler: reset toàn bộ điểm số về 0 sau khi xác nhận.
-    resetScoreButton.addEventListener("click", () => {
-      const confirmed = window.confirm("Bạn có chắc muốn reset điểm số về 0?");
-      if (!confirmed) return;
-      state.homeScore = 0;
-      state.awayScore = 0;
-      render();
-      saveState();
-    });
+      /* ========================================
+       RENDER
+       ======================================== */
+      function render() {
+        homeNameInput.value = state.homeName
+        awayNameInput.value = state.awayName
 
-    loadState();
-    hydrateRunningTimer();
-    render();
-  </script>
-</body>
+        const homeStr = String(state.homeScore)
+        const awayStr = String(state.awayScore)
+        homeScoreElement.textContent = homeStr
+        awayScoreElement.textContent = awayStr
+        homeScoreElement.setAttribute("data-ghost", "8".repeat(homeStr.length))
+        awayScoreElement.setAttribute("data-ghost", "8".repeat(awayStr.length))
+        homeScoreElement.setAttribute("data-digits", String(homeStr.length))
+        awayScoreElement.setAttribute("data-digits", String(awayStr.length))
+
+        timerDisplayElement.textContent = formatTimer(
+          state.timerRemainingSeconds,
+        )
+        toggleTimerButton.textContent = state.timerRunning
+          ? t("pause")
+          : t("start")
+
+        // Timer danger state — flash red when under 60 seconds
+        if (
+          state.timerConfigured &&
+          state.timerRemainingSeconds > 0 &&
+          state.timerRemainingSeconds <= 60 &&
+          state.timerRunning
+        ) {
+          timerDisplayElement.classList.add("danger")
+        } else {
+          timerDisplayElement.classList.remove("danger")
+        }
+
+        // I18N labels
+        timerLabelElement.textContent = t("gameClock")
+        openTimerModalButton.textContent = t("setTimer")
+        resetTimerButton.textContent = t("reset")
+        resetScoreButton.textContent = t("resetScore")
+        langButton.textContent = t("langLabel")
+        timerModalTitle.textContent = t("modalTitle")
+        minutesLabel.textContent = t("minutes")
+        secondsLabel.textContent = t("seconds")
+        cancelTimerButton.textContent = t("cancel")
+        setTimerButton.textContent = t("save")
+      }
+
+      /* ========================================
+       TIMER MODAL
+       ======================================== */
+      function syncTimerInputs() {
+        if (state.timerConfigured) {
+          minutesInput.value = Math.floor(state.timerInitialSeconds / 60)
+          secondsInput.value = state.timerInitialSeconds % 60
+        } else {
+          minutesInput.value = ""
+          secondsInput.value = ""
+        }
+      }
+
+      function openTimerModal() {
+        syncTimerInputs()
+        timerModalBackdrop.classList.add("open")
+        setTimeout(() => minutesInput.focus(), 0)
+      }
+
+      function closeTimerModal() {
+        timerModalBackdrop.classList.remove("open")
+        openTimerModalButton.focus()
+      }
+
+      /* ========================================
+       TIMER LOGIC
+       ======================================== */
+      function stopTicking() {
+        if (!tickIntervalId) return
+        clearInterval(tickIntervalId)
+        tickIntervalId = null
+      }
+
+      function addPoints(team, points) {
+        if (team === "home") {
+          state.homeScore = Math.max(0, state.homeScore + points)
+        } else {
+          state.awayScore = Math.max(0, state.awayScore + points)
+        }
+        render()
+        saveState()
+      }
+
+      function setTimer(totalSeconds) {
+        const safeSeconds = Math.max(0, Math.floor(totalSeconds))
+        state.timerInitialSeconds = safeSeconds
+        state.timerRemainingSeconds = safeSeconds
+        state.timerConfigured = safeSeconds > 0
+        state.timerRunning = false
+        state.timerEndAt = null
+        stopTicking()
+        render()
+        saveState()
+      }
+
+      function updateTimerFromClock() {
+        if (!state.timerRunning || !state.timerEndAt) return
+
+        const nextRemaining = Math.max(
+          0,
+          Math.ceil((state.timerEndAt - Date.now()) / 1000),
+        )
+        if (nextRemaining !== state.timerRemainingSeconds) {
+          state.timerRemainingSeconds = nextRemaining
+          render()
+          saveState()
+        }
+
+        if (nextRemaining === 0) {
+          state.timerRunning = false
+          state.timerEndAt = null
+          stopTicking()
+          render()
+          saveState()
+        }
+      }
+
+      function startTimer() {
+        if (!state.timerConfigured || state.timerInitialSeconds <= 0) {
+          alert(t("alertSetTime"))
+          return
+        }
+        if (state.timerRemainingSeconds <= 0) {
+          state.timerRemainingSeconds = state.timerInitialSeconds
+        }
+
+        state.timerRunning = true
+        state.timerEndAt = Date.now() + state.timerRemainingSeconds * 1000
+        stopTicking()
+        tickIntervalId = setInterval(updateTimerFromClock, 250)
+        render()
+        saveState()
+      }
+
+      function pauseTimer() {
+        if (!state.timerRunning) return
+        updateTimerFromClock()
+        state.timerRunning = false
+        state.timerEndAt = null
+        stopTicking()
+        render()
+        saveState()
+      }
+
+      function resetTimer() {
+        if (!state.timerConfigured) {
+          setTimer(0)
+          return
+        }
+        state.timerRunning = false
+        state.timerEndAt = null
+        state.timerRemainingSeconds = state.timerInitialSeconds
+        stopTicking()
+        render()
+        saveState()
+      }
+
+      function hydrateRunningTimer() {
+        if (!state.timerRunning || !state.timerEndAt) return
+        const recalculated = Math.max(
+          0,
+          Math.ceil((state.timerEndAt - Date.now()) / 1000),
+        )
+        state.timerRemainingSeconds = recalculated
+        if (recalculated === 0) {
+          state.timerRunning = false
+          state.timerEndAt = null
+          return
+        }
+        tickIntervalId = setInterval(updateTimerFromClock, 250)
+      }
+
+      /* ========================================
+       EVENT HANDLERS
+       ======================================== */
+
+      // Team name inputs
+      homeNameInput.addEventListener("input", (event) => {
+        state.homeName = sanitizeTeamName(event.target.value, "HOME")
+        saveState()
+      })
+
+      awayNameInput.addEventListener("input", (event) => {
+        state.awayName = sanitizeTeamName(event.target.value, "AWAY")
+        saveState()
+      })
+
+      // Score buttons +1/+2/+3
+      document.querySelectorAll(".score-actions .btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          const points = Number(button.dataset.points || 0)
+          const team = button.dataset.team
+          addPoints(team, points)
+        })
+      })
+
+      // Timer modal — save with minutes + seconds
+      setTimerButton.addEventListener("click", () => {
+        const minutes = Math.max(0, Math.min(99, Math.floor(Number(minutesInput.value) || 0)))
+        const seconds = Math.max(0, Math.min(59, Math.floor(Number(secondsInput.value) || 0)))
+        setTimer(minutes * 60 + seconds)
+        closeTimerModal()
+      })
+
+      // Open timer modal
+      openTimerModalButton.addEventListener("click", () => {
+        openTimerModal()
+      })
+
+      // Cancel timer modal
+      cancelTimerButton.addEventListener("click", () => {
+        closeTimerModal()
+      })
+
+      // Close modal on backdrop click
+      timerModalBackdrop.addEventListener("click", (event) => {
+        if (event.target !== timerModalBackdrop) return
+        closeTimerModal()
+      })
+
+      // Close modal on Escape
+      window.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return
+        if (!timerModalBackdrop.classList.contains("open")) return
+        closeTimerModal()
+      })
+
+      // Enter in modal saves
+      timerModal.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return
+        event.preventDefault()
+        setTimerButton.click()
+      })
+
+      // Start/Pause toggle
+      toggleTimerButton.addEventListener("click", () => {
+        if (state.timerRunning) {
+          pauseTimer()
+        } else {
+          startTimer()
+        }
+      })
+
+      // Reset timer
+      resetTimerButton.addEventListener("click", () => {
+        resetTimer()
+      })
+
+      // Reset score
+      resetScoreButton.addEventListener("click", () => {
+        const confirmed = window.confirm(t("confirmReset"))
+        if (!confirmed) return
+        state.homeScore = 0
+        state.awayScore = 0
+        render()
+        saveState()
+      })
+
+      // Language toggle
+      langButton.addEventListener("click", () => {
+        state.lang = state.lang === "en" ? "vi" : "en"
+        document.documentElement.lang = state.lang
+        render()
+        saveState()
+      })
+
+      /* ========================================
+       INIT
+       ======================================== */
+      loadState()
+      document.documentElement.lang = state.lang
+      hydrateRunningTimer()
+      render()
+    </script>
+  </body>
 </html>
