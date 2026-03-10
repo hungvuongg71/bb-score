@@ -6,7 +6,108 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
     />
-    <title>Basketball Scoreboard</title>
+
+    <!-- ========== SEO — Primary Meta Tags ========== -->
+    <title>Basketball Scoreboard — Bảng Điểm Bóng Rổ Online Miễn Phí</title>
+    <meta
+      name="title"
+      content="Basketball Scoreboard — Bảng Điểm Bóng Rổ Online Miễn Phí"
+    />
+    <meta
+      name="description"
+      content="Bảng điểm bóng rổ online miễn phí với giao diện LED chuyên nghiệp. Theo dõi điểm số, đồng hồ đếm ngược cho các trận bóng rổ. Free online basketball scoreboard with realistic LED display."
+    />
+    <meta
+      name="keywords"
+      content="basketball scoreboard, bảng điểm bóng rổ, scoreboard online, điểm số bóng rổ, game clock, đồng hồ thi đấu, LED scoreboard, free scoreboard"
+    />
+    <meta name="author" content="BB Score" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="Vietnamese" />
+    <meta name="revisit-after" content="7 days" />
+    <link rel="canonical" href="https://hungvuongg71.github.io/bb-score/" />
+
+    <!-- ========== Theme & Favicon ========== -->
+    <meta name="theme-color" content="#000000" />
+    <meta name="msapplication-TileColor" content="#000000" />
+    <link rel="icon" type="image/png" href="og-image.png" />
+    <link rel="apple-touch-icon" href="og-image.png" />
+
+    <!-- ========== Open Graph / Facebook / LinkedIn ========== -->
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://hungvuongg71.github.io/bb-score/"
+    />
+    <meta
+      property="og:title"
+      content="Basketball Scoreboard — Bảng Điểm Bóng Rổ Online"
+    />
+    <meta
+      property="og:description"
+      content="Bảng điểm bóng rổ online miễn phí với giao diện LED chuyên nghiệp. Theo dõi điểm số, đồng hồ đếm ngược cho các trận bóng rổ."
+    />
+    <meta
+      property="og:image"
+      content="https://hungvuongg71.github.io/bb-score/og-image.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Basketball Scoreboard - Bảng điểm bóng rổ LED"
+    />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:site_name" content="BB Score" />
+
+    <!-- ========== Twitter Card ========== -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:url"
+      content="https://hungvuongg71.github.io/bb-score/"
+    />
+    <meta
+      name="twitter:title"
+      content="Basketball Scoreboard — Bảng Điểm Bóng Rổ Online"
+    />
+    <meta
+      name="twitter:description"
+      content="Bảng điểm bóng rổ online miễn phí với giao diện LED chuyên nghiệp. Theo dõi điểm số, đồng hồ đếm ngược cho các trận bóng rổ."
+    />
+    <meta
+      name="twitter:image"
+      content="https://hungvuongg71.github.io/bb-score/og-image.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Basketball Scoreboard - Bảng điểm bóng rổ LED"
+    />
+
+    <!-- ========== Structured Data — JSON-LD ========== -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Basketball Scoreboard",
+        "alternateName": "Bảng Điểm Bóng Rổ",
+        "url": "https://hungvuongg71.github.io/bb-score/",
+        "description": "Bảng điểm bóng rổ online miễn phí với giao diện LED chuyên nghiệp. Free online basketball scoreboard with realistic LED display.",
+        "applicationCategory": "SportsApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "image": "https://hungvuongg71.github.io/bb-score/og-image.png",
+        "inLanguage": ["vi", "en"],
+        "browserRequirements": "Requires JavaScript",
+        "softwareVersion": "1.0"
+      }
+    </script>
+
+    <!-- ========== Stylesheets ========== -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/dseg@0.46.0/css/dseg.css"
@@ -828,9 +929,7 @@
         <button id="reset-score-btn" class="btn reset-btn" type="button">
           ⟲ RESET SCORE
         </button>
-        <button id="lang-btn" class="btn lang-btn" type="button">
-          🌐 VI
-        </button>
+        <button id="lang-btn" class="btn lang-btn" type="button">🌐 VI</button>
         <div class="footer-credit">Developed by hungvuongg71</div>
       </div>
     </main>
@@ -872,7 +971,9 @@
           </label>
         </div>
         <div class="modal-actions">
-          <button id="cancel-timer-btn" class="btn" type="button">CANCEL</button>
+          <button id="cancel-timer-btn" class="btn" type="button">
+            CANCEL
+          </button>
           <button id="set-timer-btn" class="btn timer-btn" type="button">
             SAVE
           </button>
@@ -929,7 +1030,9 @@
       const awayScoreElement = document.getElementById("away-score")
       const timerDisplayElement = document.getElementById("timer-display")
       const timerLabelElement = document.getElementById("timer-label")
-      const openTimerModalButton = document.getElementById("open-timer-modal-btn")
+      const openTimerModalButton = document.getElementById(
+        "open-timer-modal-btn",
+      )
       const minutesInput = document.getElementById("minutes-input")
       const secondsInput = document.getElementById("seconds-input")
       const minutesLabel = document.getElementById("minutes-label")
@@ -1072,8 +1175,8 @@
           minutesInput.value = Math.floor(state.timerInitialSeconds / 60)
           secondsInput.value = state.timerInitialSeconds % 60
         } else {
-          minutesInput.value = ""
-          secondsInput.value = ""
+          minutesInput.value = "10"
+          secondsInput.value = "00"
         }
       }
 
@@ -1222,8 +1325,14 @@
 
       // Timer modal — save with minutes + seconds
       setTimerButton.addEventListener("click", () => {
-        const minutes = Math.max(0, Math.min(99, Math.floor(Number(minutesInput.value) || 0)))
-        const seconds = Math.max(0, Math.min(59, Math.floor(Number(secondsInput.value) || 0)))
+        const minutes = Math.max(
+          0,
+          Math.min(99, Math.floor(Number(minutesInput.value) || 0)),
+        )
+        const seconds = Math.max(
+          0,
+          Math.min(59, Math.floor(Number(secondsInput.value) || 0)),
+        )
         setTimer(minutes * 60 + seconds)
         closeTimerModal()
       })
