@@ -287,6 +287,10 @@
         margin-bottom: 0.3vh;
       }
 
+      .team-name-wrap {
+        position: relative;
+      }
+
       .team-name {
         width: 100%;
         border: 1px solid var(--frame-edge);
@@ -295,7 +299,7 @@
         color: var(--led-amber);
         text-transform: uppercase;
         text-align: center;
-        padding: 0.8vh 1vw;
+        padding: 0.8vh 2.8em 0.8vh 1vw;
         font-size: clamp(14px, 2vw, 24px);
         letter-spacing: 0.12em;
         font-weight: 700;
@@ -310,6 +314,18 @@
         outline: none;
         border-color: var(--led-amber);
         box-shadow: 0 0 10px rgba(255, 191, 0, 0.2);
+      }
+
+      .team-name-icon {
+        position: absolute;
+        top: 50%;
+        right: 0.9em;
+        transform: translateY(-50%);
+        color: var(--led-label);
+        font-size: 0.95em;
+        opacity: 0.8;
+        pointer-events: none;
+        user-select: none;
       }
 
       /* ========================================
@@ -813,7 +829,7 @@
 
       <!-- ====== HOME TEAM ====== -->
       <section class="panel team-card home-team" aria-label="Đội nhà">
-        <div>
+        <div class="team-name-wrap">
           <input
             id="home-name"
             class="team-name"
@@ -822,6 +838,7 @@
             value="HOME"
             aria-label="Tên đội nhà"
           />
+          <span class="team-name-icon" aria-hidden="true">✎</span>
         </div>
         <div id="home-score" class="score" aria-live="polite">0</div>
         <div
@@ -859,7 +876,9 @@
               SET TIMER
             </button>
           </div>
-          <button id="lang-btn" class="btn lang-btn" type="button">🌐 VI</button>
+          <button id="lang-btn" class="btn lang-btn" type="button">
+            🌐 VI
+          </button>
         </div>
         <div
           class="timer-controls"
@@ -878,7 +897,7 @@
 
       <!-- ====== AWAY TEAM ====== -->
       <section class="panel team-card away-team" aria-label="Đội khách">
-        <div>
+        <div class="team-name-wrap">
           <input
             id="away-name"
             class="team-name"
@@ -887,6 +906,7 @@
             value="AWAY"
             aria-label="Tên đội khách"
           />
+          <span class="team-name-icon" aria-hidden="true">✎</span>
         </div>
         <div id="away-score" class="score" aria-live="polite">0</div>
         <div
@@ -907,7 +927,6 @@
           </button>
         </div>
       </section>
-
     </main>
 
     <!-- ====== TIMER MODAL ====== -->
@@ -973,7 +992,8 @@
           seconds: "Seconds",
           cancel: "CANCEL",
           save: "SAVE",
-          confirmReset: "Are you sure you want to reset the timer and both scores?",
+          confirmReset:
+            "Are you sure you want to reset the timer and both scores?",
           alertSetTime: "Please SET a time before pressing START.",
           langLabel: "🌐 VI",
         },
@@ -988,7 +1008,8 @@
           seconds: "Giây",
           cancel: "HỦY",
           save: "LƯU",
-          confirmReset: "Bạn có chắc muốn đặt lại đồng hồ và điểm số của cả hai đội?",
+          confirmReset:
+            "Bạn có chắc muốn đặt lại đồng hồ và điểm số của cả hai đội?",
           alertSetTime: "Vui lòng CÀI GIỜ trước khi BẮT ĐẦU.",
           langLabel: "🌐 EN",
         },
