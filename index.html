@@ -1367,6 +1367,15 @@
         selectTeamNameText(awayNameInput)
       })
 
+      document.addEventListener("pointerdown", (event) => {
+        const activeElement = document.activeElement
+        const isTeamNameInput =
+          activeElement === homeNameInput || activeElement === awayNameInput
+        if (!isTeamNameInput) return
+        if (event.target.closest(".team-name-wrap")) return
+        activeElement.blur()
+      })
+
       // Prevent rapid double-tap zoom on mobile score buttons
       document.querySelectorAll(".score-actions .btn").forEach((button) => {
         button.addEventListener("dblclick", (event) => {
