@@ -113,7 +113,7 @@
       href="https://cdn.jsdelivr.net/npm/dseg@0.46.0/css/dseg.css"
     />
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Orbitron:wght@400;500;700;800;900&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,500,0,0&family=Orbitron:wght@400;500;700;800;900&display=swap");
 
       /* ========================================
        CSS VARIABLES — LED Scoreboard Theme
@@ -288,18 +288,30 @@
       }
 
       .team-name-wrap {
-        position: relative;
-      }
-
-      .team-name {
         width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.8vh 1vw;
         border: 1px solid var(--frame-edge);
         border-radius: 4px;
         background: #050505;
+        transition:
+          border-color 200ms,
+          box-shadow 200ms;
+      }
+
+      .team-name {
+        width: auto;
+        min-width: 4ch;
+        max-width: calc(100% - 2.2em);
+        border: none;
+        border-radius: 0;
+        background: transparent;
         color: var(--led-amber);
         text-transform: uppercase;
         text-align: center;
-        padding: 0.8vh 2.8em 0.8vh 1vw;
+        padding: 0;
         font-size: clamp(14px, 2vw, 24px);
         letter-spacing: 0.12em;
         font-weight: 700;
@@ -307,25 +319,32 @@
         text-shadow:
           0 0 7px var(--glow-amber),
           0 0 20px rgba(255, 191, 0, 0.15);
-        transition: border-color 200ms;
+        transition: none;
       }
 
       .team-name:focus {
         outline: none;
+      }
+
+      .team-name-wrap:focus-within {
         border-color: var(--led-amber);
         box-shadow: 0 0 10px rgba(255, 191, 0, 0.2);
       }
 
       .team-name-icon {
-        position: absolute;
-        top: 50%;
-        right: 0.9em;
-        transform: translateY(-50%);
+        font-family: "Material Symbols Outlined";
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 500,
+          "GRAD" 0,
+          "opsz" 24;
         color: var(--led-label);
-        font-size: 0.95em;
+        font-size: clamp(20px, 2.4vw, 28px);
         opacity: 0.8;
         pointer-events: none;
         user-select: none;
+        line-height: 1;
+        flex: 0 0 auto;
       }
 
       /* ========================================
@@ -445,6 +464,10 @@
       .score-actions .btn {
         color: var(--led-green);
         border-color: rgba(0, 255, 65, 0.2);
+        font-family: "DSEG7-Classic", monospace;
+        font-size: clamp(18px, 2.8vw, 28px);
+        letter-spacing: 0.04em;
+        text-transform: none;
         text-shadow: 0 0 8px var(--glow-green);
       }
 
@@ -829,17 +852,18 @@
 
       <!-- ====== HOME TEAM ====== -->
       <section class="panel team-card home-team" aria-label="Đội nhà">
-        <div class="team-name-wrap">
+        <label class="team-name-wrap" for="home-name">
           <input
             id="home-name"
             class="team-name"
             type="text"
             maxlength="18"
+            size="4"
             value="HOME"
             aria-label="Tên đội nhà"
           />
-          <span class="team-name-icon" aria-hidden="true">✎</span>
-        </div>
+          <span class="team-name-icon" aria-hidden="true">border_color</span>
+        </label>
         <div id="home-score" class="score" aria-live="polite">0</div>
         <div
           class="score-actions"
@@ -852,10 +876,10 @@
             data-points="-1"
             type="button"
           >
-            -1
+            -
           </button>
           <button class="btn" data-team="home" data-points="1" type="button">
-            +1
+            +
           </button>
         </div>
       </section>
@@ -897,17 +921,18 @@
 
       <!-- ====== AWAY TEAM ====== -->
       <section class="panel team-card away-team" aria-label="Đội khách">
-        <div class="team-name-wrap">
+        <label class="team-name-wrap" for="away-name">
           <input
             id="away-name"
             class="team-name"
             type="text"
             maxlength="18"
+            size="4"
             value="AWAY"
             aria-label="Tên đội khách"
           />
-          <span class="team-name-icon" aria-hidden="true">✎</span>
-        </div>
+          <span class="team-name-icon" aria-hidden="true">border_color</span>
+        </label>
         <div id="away-score" class="score" aria-live="polite">0</div>
         <div
           class="score-actions"
@@ -920,10 +945,10 @@
             data-points="-1"
             type="button"
           >
-            -1
+            -
           </button>
           <button class="btn" data-team="away" data-points="1" type="button">
-            +1
+            +
           </button>
         </div>
       </section>
@@ -1113,12 +1138,28 @@
         return trimmed || fallbackName
       }
 
+      function syncTeamNameInputSize(input, value) {
+        const visibleLength = Math.max(
+          4,
+          Math.min(18, value.trim().length || 4),
+        )
+        input.size = visibleLength
+      }
+
+      function selectTeamNameText(input) {
+        requestAnimationFrame(() => {
+          input.setSelectionRange(0, input.value.length)
+        })
+      }
+
       /* ========================================
        RENDER
        ======================================== */
       function render() {
         homeNameInput.value = state.homeName
         awayNameInput.value = state.awayName
+        syncTeamNameInputSize(homeNameInput, state.homeName)
+        syncTeamNameInputSize(awayNameInput, state.awayName)
 
         const homeStr = String(state.homeScore)
         const awayStr = String(state.awayScore)
@@ -1302,12 +1343,26 @@
       // Team name inputs
       homeNameInput.addEventListener("input", (event) => {
         state.homeName = sanitizeTeamName(event.target.value, "HOME")
+        syncTeamNameInputSize(event.target, event.target.value)
         saveState()
+      })
+      homeNameInput.addEventListener("focus", () => {
+        selectTeamNameText(homeNameInput)
+      })
+      homeNameInput.addEventListener("click", () => {
+        selectTeamNameText(homeNameInput)
       })
 
       awayNameInput.addEventListener("input", (event) => {
         state.awayName = sanitizeTeamName(event.target.value, "AWAY")
+        syncTeamNameInputSize(event.target, event.target.value)
         saveState()
+      })
+      awayNameInput.addEventListener("focus", () => {
+        selectTeamNameText(awayNameInput)
+      })
+      awayNameInput.addEventListener("click", () => {
+        selectTeamNameText(awayNameInput)
       })
 
       // Prevent rapid double-tap zoom on mobile score buttons
