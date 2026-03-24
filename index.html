@@ -251,6 +251,7 @@
       .panel {
         background: transparent;
         position: relative;
+        min-height: 0;
       }
 
       .team-card {
@@ -259,6 +260,7 @@
         grid-template-rows: auto 1fr auto;
         gap: 0.8vh;
         position: relative;
+        min-height: 0;
       }
 
       /* Separator lines between panels */
@@ -356,12 +358,13 @@
       }
 
       /* ========================================
-       SCORE ACTIONS — +1/+2/+3 and -1/-2/-3
+       SCORE ACTIONS — +1 and -1
        ======================================== */
       .score-actions {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.6vh;
+        touch-action: manipulation;
       }
 
       /* ========================================
@@ -390,6 +393,9 @@
         transition: all 100ms ease;
         position: relative;
         overflow: hidden;
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        user-select: none;
       }
 
       .btn::after {
@@ -402,15 +408,6 @@
           transparent 50%
         );
         pointer-events: none;
-      }
-
-      .btn:hover {
-        border-color: var(--frame-highlight);
-        background: linear-gradient(
-          180deg,
-          var(--metal-mid) 0%,
-          var(--metal-dark) 100%
-        );
       }
 
       .btn:active {
@@ -429,10 +426,6 @@
         border-color: rgba(0, 255, 65, 0.2);
         text-shadow: 0 0 8px var(--glow-green);
       }
-      .score-actions .btn:hover {
-        border-color: rgba(0, 255, 65, 0.4);
-        background: linear-gradient(180deg, #0a1a0d 0%, #050d07 100%);
-      }
 
       /* Score minus buttons — Red accent */
       .score-actions .btn-minus {
@@ -440,9 +433,27 @@
         border-color: rgba(255, 45, 45, 0.25);
         text-shadow: 0 0 8px var(--glow-red);
       }
-      .score-actions .btn-minus:hover {
-        border-color: rgba(255, 45, 45, 0.5);
-        background: linear-gradient(180deg, #1e0707 0%, #100303 100%);
+      @media (hover: hover) {
+        .btn:hover,
+        .score-actions .btn:hover,
+        .score-actions .btn-minus:hover {
+          border-color: var(--frame-highlight);
+          background: linear-gradient(
+            180deg,
+            var(--metal-mid) 0%,
+            var(--metal-dark) 100%
+          );
+        }
+
+        .score-actions .btn:hover {
+          border-color: rgba(0, 255, 65, 0.4);
+          background: linear-gradient(180deg, #0a1a0d 0%, #050d07 100%);
+        }
+
+        .score-actions .btn-minus:hover {
+          border-color: rgba(255, 45, 45, 0.5);
+          background: linear-gradient(180deg, #1e0707 0%, #100303 100%);
+        }
       }
 
       /* ========================================
@@ -454,6 +465,7 @@
         gap: 0.8vh;
         align-content: center;
         background: rgba(5, 5, 5, 0.6);
+        min-height: 0;
       }
 
       /* Timer label */
@@ -573,6 +585,15 @@
         gap: 0.6vh;
       }
 
+      .center-credit {
+        text-align: center;
+        font-size: clamp(8px, 1vw, 11px);
+        color: var(--led-label);
+        opacity: 0.5;
+        letter-spacing: 0.1em;
+        padding-top: 0.2vh;
+      }
+
       /* Timer buttons — Amber accent */
       .timer-btn {
         color: var(--led-amber);
@@ -634,7 +655,7 @@
       }
 
       /* ========================================
-       FOOTER — Reset & Credit
+       FOOTER — Reset & Language
        ======================================== */
       .footer-actions {
         display: grid;
@@ -669,16 +690,6 @@
       .lang-btn:hover {
         border-color: rgba(0, 229, 255, 0.5);
         background: linear-gradient(180deg, #071a1e 0%, #030d10 100%);
-      }
-
-      .footer-credit {
-        grid-column: 1 / -1;
-        text-align: center;
-        font-size: clamp(8px, 1vw, 11px);
-        color: var(--led-label);
-        opacity: 0.5;
-        letter-spacing: 0.1em;
-        padding-top: 0.3vh;
       }
 
       /* ========================================
@@ -767,8 +778,21 @@
           padding: 0.6vh 0.6vw;
         }
 
+        .scoreboard {
+          grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+        }
+
         .team-card {
           padding: 1vh 1.5vw 0.8vh;
+        }
+
+        .center-panel {
+          padding: 1vh 1.5vw;
+          gap: 0.6vh;
+        }
+
+        .footer-actions {
+          padding: 0.6vh 1.5vw 0.8vh;
         }
 
         .score {
@@ -782,6 +806,20 @@
         .btn {
           min-height: 5.8vh;
           font-size: clamp(12px, 3.8vw, 17px);
+        }
+
+        .reset-btn,
+        .lang-btn {
+          min-height: 5.8vh;
+        }
+
+        .timer-display {
+          font-size: clamp(42px, 12vw, 72px);
+        }
+
+        .center-credit {
+          font-size: clamp(7px, 2.4vw, 10px);
+          padding-top: 0;
         }
       }
     </style>
@@ -812,12 +850,6 @@
           <button class="btn" data-team="home" data-points="1" type="button">
             +1
           </button>
-          <button class="btn" data-team="home" data-points="2" type="button">
-            +2
-          </button>
-          <button class="btn" data-team="home" data-points="3" type="button">
-            +3
-          </button>
           <button
             class="btn btn-minus"
             data-team="home"
@@ -825,22 +857,6 @@
             type="button"
           >
             -1
-          </button>
-          <button
-            class="btn btn-minus"
-            data-team="home"
-            data-points="-2"
-            type="button"
-          >
-            -2
-          </button>
-          <button
-            class="btn btn-minus"
-            data-team="home"
-            data-points="-3"
-            type="button"
-          >
-            -3
           </button>
         </div>
       </section>
@@ -868,6 +884,7 @@
             RESET
           </button>
         </div>
+        <div class="center-credit">Developed by hungvuongg71</div>
       </section>
 
       <!-- ====== AWAY TEAM ====== -->
@@ -891,12 +908,6 @@
           <button class="btn" data-team="away" data-points="1" type="button">
             +1
           </button>
-          <button class="btn" data-team="away" data-points="2" type="button">
-            +2
-          </button>
-          <button class="btn" data-team="away" data-points="3" type="button">
-            +3
-          </button>
           <button
             class="btn btn-minus"
             data-team="away"
@@ -904,22 +915,6 @@
             type="button"
           >
             -1
-          </button>
-          <button
-            class="btn btn-minus"
-            data-team="away"
-            data-points="-2"
-            type="button"
-          >
-            -2
-          </button>
-          <button
-            class="btn btn-minus"
-            data-team="away"
-            data-points="-3"
-            type="button"
-          >
-            -3
           </button>
         </div>
       </section>
@@ -930,7 +925,6 @@
           ⟲ RESET SCORE
         </button>
         <button id="lang-btn" class="btn lang-btn" type="button">🌐 VI</button>
-        <div class="footer-credit">Developed by hungvuongg71</div>
       </div>
     </main>
 
@@ -1314,7 +1308,14 @@
         saveState()
       })
 
-      // Score buttons +1/+2/+3
+      // Prevent rapid double-tap zoom on mobile score buttons
+      document.querySelectorAll(".score-actions .btn").forEach((button) => {
+        button.addEventListener("dblclick", (event) => {
+          event.preventDefault()
+        })
+      })
+
+      // Score buttons +1/-1
       document.querySelectorAll(".score-actions .btn").forEach((button) => {
         button.addEventListener("click", () => {
           const points = Number(button.dataset.points || 0)
